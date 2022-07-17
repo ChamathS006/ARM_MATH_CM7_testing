@@ -1,16 +1,6 @@
-14:00:41 **** Incremental Build of configuration Debug for project CMSIS_4.5_test_v2 ****
+18:52:23 **** Incremental Build of configuration Debug for project CMSIS_4.5_test_v2 ****
 make -j12 all 
 arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m7 -std=gnu11 -g3 -DDEBUG -DARM_MATH_CM7 -DUSE_HAL_DRIVER -DSTM32H7A3xxQ -c -I../Core/Inc -I../Drivers/STM32H7xx_HAL_Driver/Inc -I../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
-../Core/Src/main.c: In function 'main':
-../Core/Src/main.c:100:28: warning: unused variable 'matrixC' [-Wunused-variable]
-  100 |   arm_matrix_instance_f32* matrixC; //C. Meant to be C = AB
-      |                            ^~~~~~~
-../Core/Src/main.c:107:3: warning: 'matrixA' is used uninitialized in this function [-Wuninitialized]
-  107 |   arm_mat_init_f32(matrixA, nRows, nCols, pDataA);
-      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../Core/Src/main.c:108:3: warning: 'matrixB' is used uninitialized in this function [-Wuninitialized]
-  108 |   arm_mat_init_f32(matrixB, nRows, nCols, pDataB);
-      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 arm-none-eabi-gcc -o "CMSIS_4.5_test_v2.elf" @"objects.list"  -larm_cortexM7lfdp_math -mcpu=cortex-m7 -T"C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\STM32H7A3ZITXQ_FLASH.ld" --specs=nosys.specs -Wl,-Map="CMSIS_4.5_test_v2.map" -Wl,--gc-sections -static -L"C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\libs" --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 Finished building target: CMSIS_4.5_test_v2.elf
  
@@ -18,7 +8,7 @@ arm-none-eabi-size   CMSIS_4.5_test_v2.elf
 arm-none-eabi-objdump -h -S  CMSIS_4.5_test_v2.elf  > "CMSIS_4.5_test_v2.list"
 arm-none-eabi-objcopy  -O binary  CMSIS_4.5_test_v2.elf  "CMSIS_4.5_test_v2.bin"
    text	   data	    bss	    dec	    hex	filename
-  19696	     24	   1712	  21432	   53b8	CMSIS_4.5_test_v2.elf
+  20944	    124	   1732	  22800	   5910	CMSIS_4.5_test_v2.elf
 Finished building: default.size.stdout
  
 Finished building: CMSIS_4.5_test_v2.bin
@@ -26,5 +16,5 @@ Finished building: CMSIS_4.5_test_v2.bin
 Finished building: CMSIS_4.5_test_v2.list
  
 
-14:00:42 Build Finished. 0 errors, 3 warnings. (took 1s.333ms)
+18:52:24 Build Finished. 0 errors, 0 warnings. (took 1s.419ms)
 

@@ -55,12 +55,38 @@ static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_HS_USB_Init(void);
 /* USER CODE BEGIN PFP */
-
+int mat_f32_check_equal(arm_matrix_instance_f32* matrixAPtr, arm_matrix_instance_f32* matrixBPtr);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+int mat_f32_check_equal(arm_matrix_instance_f32* matrixAPtr, arm_matrix_instance_f32* matrixBPtr) {
+	/*
+	 * Returns 0 if matrices aren't equal
+	 * Returns 1 if matrices are equal
+	 *
+	 * */
+
+	// Check if the rows and cols match up in number
+	int test_nRows = (matrixAPtr->numRows == matrixBPtr->numRows);
+	int test_nCols = (matrixAPtr->numCols == matrixBPtr->numCols);
+
+	// If there's a mismatch, then return 0 immediately
+	if (test_nRows * test_nCols == 0) {
+		return 0;
+	}
+
+	// Since rows and cols match, we need to check every entry
+	for (int i = 0; i < (matrixAPtr->numRows) * (matrixAPtr->numCols); i++) {
+		if (matrixAPtr->pData[i] != matrixBPtr->pData[i]) {
+			return 0;
+		}
+	}
+
+	// If it's fine, then return 1
+	return 1;
+}
 /* USER CODE END 0 */
 
 /**
@@ -94,39 +120,51 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_HS_USB_Init();
   /* USER CODE BEGIN 2 */
+
   // Initialise some variables
-  arm_matrix_instance_f32* matrixA; //A
-  arm_matrix_instance_f32* matrixB; //B
-  arm_matrix_instance_f32* matrixC; //C. Meant to be C = AB
+  arm_matrix_instance_f32 matrixA; //A
+  arm_matrix_instance_f32 matrixB; //B
+  arm_matrix_instance_f32 matrixC; //C. Meant to be C = AB
+  arm_matrix_instance_f32 matrixTrue; // True result to compare against
 
-  uint16_t nRows = 2;
-  uint16_t nCols = 2;
-  float32_t pDataA[] = {1,2,3,4};
-  float32_t pDataB[] = {11,12,13,14};
+  uint16_t nRowsA = 3;
+  uint16_t nColsA = 2;
+  float32_t pDataA[] = {1,2,3,4,5,6};
 
-  arm_mat_init_f32(matrixA, nRows, nCols, pDataA);
-  arm_mat_init_f32(matrixB, nRows, nCols, pDataB);
+  uint16_t nRowsB = 2;
+  uint16_t nColsB = 3;
+  float32_t pDataB[] = {8,1,3,5,2,4};
 
-//  if (matrixA->numRows != nRows) {
-//	  matrixA->numRows = nRows;
-//  }
-//  if (matrixA->numCols != nCols) {
-//	  matrixA->numCols = nCols;
-//  }
-//  if (matrixA->pData != pDataA) {
-//	  matrixA->pData = pDataA;
-//  }
-//
-//  if (matrixB->numRows != nRows) {
-//	  matrixB->numRows = nRows;
-//  }
-//  if (matrixB->numCols != nCols) {
-//	  matrixB->numCols = nCols;
-//  }
-//  if (matrixB->pData != pDataB) {
-//	  matrixB->pData = pDataB;
-//  }
+  uint16_t nRowsTrue = nRowsA;
+  uint16_t nColsTrue = nColsB;
+  float32_t pDataTrue[] = {18,5,11,44,11,25,70,17,39};
 
+  arm_mat_init_f32(&matrixA, nRowsA, nColsA, pDataA);
+  arm_mat_init_f32(&matrixB, nRowsB, nColsB, pDataB);
+  arm_mat_init_f32(&matrixTrue, nRowsTrue, nColsTrue, pDataTrue);
+
+  // Initialise matrixC to store the result of matrixA * matrixB
+  uint16_t matrixC_size = matrixA.numRows * matrixB.numCols;
+  float32_t pDataC[matrixC_size];
+
+  arm_mat_init_f32(&matrixC, matrixA.numRows, matrixB.numCols, pDataC);
+
+  // Multiply A and B and store in C
+  arm_status ableToMultiply = arm_mat_mult_f32(&matrixA, &matrixB, &matrixC);
+
+  // If multiplication failed, then test_mult_flag should be set to 0
+  int test_mult_flag;
+
+  if (ableToMultiply == ARM_MATH_SUCCESS) {
+	  test_mult_flag = mat_f32_check_equal(&matrixC, &matrixTrue);
+  }
+  else {
+	  test_mult_flag = 0;
+	  // Jump to error handler as well
+	  Error_Handler();
+  }
+
+  free(pDataC);
 
   /* USER CODE END 2 */
 
@@ -134,6 +172,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (test_mult_flag == 1) {
+		  HAL_GPIO_TogglePin(Green_LED_GPIO_Port, Green_LED_Pin);
+	  }
+	  else {
+		  HAL_GPIO_TogglePin(Red_LED_GPIO_Port, Red_LED_Pin);
+	  }
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -289,10 +334,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(USB_FS_PWR_EN_GPIO_Port, USB_FS_PWR_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LD1_Pin|Red_LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, Green_LED_Pin|Red_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(Yellow_LED_GPIO_Port, Yellow_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -307,8 +352,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(USB_FS_PWR_EN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD1_Pin Red_LED_Pin */
-  GPIO_InitStruct.Pin = LD1_Pin|Red_LED_Pin;
+  /*Configure GPIO pins : Green_LED_Pin Red_LED_Pin */
+  GPIO_InitStruct.Pin = Green_LED_Pin|Red_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -341,12 +386,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
+  /*Configure GPIO pin : Yellow_LED_Pin */
+  GPIO_InitStruct.Pin = Yellow_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(Yellow_LED_GPIO_Port, &GPIO_InitStruct);
 
 }
 
@@ -365,6 +410,9 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+	  HAL_GPIO_WritePin(Red_LED_GPIO_Port, Red_LED_Pin, GPIO_PIN_SET);
+	  HAL_GPIO_WritePin(Green_LED_GPIO_Port, Green_LED_Pin, GPIO_PIN_SET);
+	  HAL_GPIO_WritePin(Yellow_LED_GPIO_Port, Yellow_LED_Pin, GPIO_PIN_SET);
   }
   /* USER CODE END Error_Handler_Debug */
 }

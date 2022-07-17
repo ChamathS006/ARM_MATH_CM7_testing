@@ -69,8 +69,8 @@ void Error_Handler(void);
 #define PH0_MCU_GPIO_Port GPIOH
 #define PH1_MCU_Pin GPIO_PIN_1
 #define PH1_MCU_GPIO_Port GPIOH
-#define LD1_Pin GPIO_PIN_0
-#define LD1_GPIO_Port GPIOB
+#define Green_LED_Pin GPIO_PIN_0
+#define Green_LED_GPIO_Port GPIOB
 #define Red_LED_Pin GPIO_PIN_14
 #define Red_LED_GPIO_Port GPIOB
 #define STLINK_RX_Pin GPIO_PIN_8
@@ -87,8 +87,8 @@ void Error_Handler(void);
 #define USB_FS_N_GPIO_Port GPIOA
 #define USB_FS_P_Pin GPIO_PIN_12
 #define USB_FS_P_GPIO_Port GPIOA
-#define LD2_Pin GPIO_PIN_1
-#define LD2_GPIO_Port GPIOE
+#define Yellow_LED_Pin GPIO_PIN_1
+#define Yellow_LED_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
