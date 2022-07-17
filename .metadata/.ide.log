@@ -1291,3 +1291,42 @@
 2022-07-17 13:00:49,952 [INFO] ApiDb:280 - User favorites MCUs=[]
 2022-07-17 13:00:49,954 [INFO] ApiDb:276 - Save user favorites file C:\Users\chama/.stm32cubeide/favorites.boards.txt: 0 item(s)
 2022-07-17 13:00:49,954 [INFO] ApiDb:280 - User favorites Boards=[]
+2022-07-17 13:23:48,058 [INFO] UtilMem:74 - End SaveConfig() Used Memory: 830371840 Bytes (1073741824)
+2022-07-17 13:23:49,400 [INFO] UtilMem:74 - End SaveConfig() Used Memory: 870744064 Bytes (1073741824)
+2022-07-17 13:23:49,676 [INFO] UtilMem:74 - End SaveConfig() Used Memory: 796426704 Bytes (1073741824)
+2022-07-17 13:23:50,133 [INFO] BlockDiagram:2740 - set Specific Code input for plugin: USB_OTG_HS
+2022-07-17 13:23:50,134 [INFO] BlockDiagram:2740 - set Specific Code input for plugin: RCC
+2022-07-17 13:23:50,134 [INFO] BlockDiagram:2740 - set Specific Code input for plugin: USART
+2022-07-17 13:23:50,134 [INFO] BlockDiagram:2740 - set Specific Code input for plugin: SYS
+2022-07-17 13:23:50,134 [INFO] BlockDiagram:2740 - set Specific Code input for plugin: NVIC
+2022-07-17 13:23:50,135 [INFO] BlockDiagram:2740 - set Specific Code input for plugin: GPIO
+2022-07-17 13:23:50,136 [INFO] CodeGenerator:663 - code generatio: config db path: C:\ST\STM32CubeIDE_1.8.0\STM32CubeIDE\plugins\com.st.stm32cube.common.mx_6.4.0.202111222105\\db\
+2022-07-17 13:23:51,120 [INFO] CodeEngine:239 - oldGeneratedFile, C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\MXTmpFiles\license.tmp_save
+2022-07-17 13:23:51,205 [INFO] CodeEngine:257 - Generated code: C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\MXTmpFiles\license.tmp
+2022-07-17 13:23:51,301 [INFO] CodeEngine:239 - oldGeneratedFile, C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\MXTmpFiles\gpio.tmp_save
+2022-07-17 13:23:51,360 [INFO] CodeEngine:257 - Generated code: C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\MXTmpFiles\gpio.tmp
+2022-07-17 13:23:51,834 [WARN] IPConfigManager:91 - WARNING: Missing Config File for USB ip!!
+2022-07-17 13:23:51,949 [INFO] CodeEngine:239 - oldGeneratedFile, C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\MXTmpFiles\cortex.tmp_save
+2022-07-17 13:23:51,996 [INFO] CodeEngine:257 - Generated code: C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\MXTmpFiles\cortex.tmp
+2022-07-17 13:23:52,022 [INFO] CodeEngine:239 - oldGeneratedFile, C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Src\stm32h7xx_it.c_save
+2022-07-17 13:23:52,120 [INFO] CodeEngine:257 - Generated code: C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Src\stm32h7xx_it.c
+2022-07-17 13:23:52,126 [INFO] CodeEngine:239 - oldGeneratedFile, C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Inc\stm32h7xx_it.h_save
+2022-07-17 13:23:52,180 [INFO] CodeEngine:257 - Generated code: C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Inc\stm32h7xx_it.h
+2022-07-17 13:23:52,352 [INFO] CodeEngine:239 - oldGeneratedFile, C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Src\stm32h7xx_hal_msp.c_save
+2022-07-17 13:23:52,437 [INFO] CodeEngine:257 - Generated code: C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Src\stm32h7xx_hal_msp.c
+2022-07-17 13:23:52,442 [INFO] CodeEngine:239 - oldGeneratedFile, C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\MXTmpFiles\system.tmp_save
+2022-07-17 13:23:52,488 [INFO] CodeEngine:257 - Generated code: C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\MXTmpFiles\system.tmp
+2022-07-17 13:23:52,502 [INFO] CodeEngine:239 - oldGeneratedFile, C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Inc\stm32h7xx_hal_conf.h_save
+2022-07-17 13:23:52,572 [INFO] CodeEngine:257 - Generated code: C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Inc\stm32h7xx_hal_conf.h
+2022-07-17 13:23:52,649 [WARN] IPConfigManager:3151 - IP not found : USB_OTG
+2022-07-17 13:23:52,650 [WARN] CodeGenerator:3358 - IP not found : null
+2022-07-17 13:23:52,663 [INFO] CodeEngine:239 - oldGeneratedFile, C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Inc\main.h_save
+2022-07-17 13:23:52,742 [INFO] CodeEngine:257 - Generated code: C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Inc\main.h
+2022-07-17 13:23:52,753 [INFO] CodeEngine:239 - oldGeneratedFile, C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Src\main.c_save
+2022-07-17 13:23:52,887 [INFO] CodeEngine:257 - Generated code: C:\Users\chama\STM32CubeIDE\ARM_MATH_CM7_testing\CMSIS_4.5_test_v2\Core\Src\main.c
+2022-07-17 13:23:53,812 [INFO] ProjectBuilder:2589 - Time for Copy HAL[1] : 329mS.
+2022-07-17 13:23:53,823 [INFO] ProjectBuilder:3665 - Project Generator version: 3.15.2
+2022-07-17 13:23:54,248 [INFO] ConfigFileManager:1273 - The Die is : DIE480
+2022-07-17 13:23:55,966 [INFO] ProjectBuilder:3832 - Time for Generating toolchain IDE Files: 2143mS.
+2022-07-17 13:23:55,967 [INFO] ProjectBuilder:2461 - Time for Copy CMSIS : 0mS.
+2022-07-17 13:23:55,970 [INFO] ProjectBuilder:2461 - Time for Copy CMSIS : 0mS.

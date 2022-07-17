@@ -21,7 +21,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <stdlib.h>
+#include "string.h"
+#include "arm_math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,6 +94,39 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_HS_USB_Init();
   /* USER CODE BEGIN 2 */
+  // Initialise some variables
+  arm_matrix_instance_f32* matrixA; //A
+  arm_matrix_instance_f32* matrixB; //B
+  arm_matrix_instance_f32* matrixC; //C. Meant to be C = AB
+
+  uint16_t nRows = 2;
+  uint16_t nCols = 2;
+  float32_t pDataA[] = {1,2,3,4};
+  float32_t pDataB[] = {11,12,13,14};
+
+  arm_mat_init_f32(matrixA, nRows, nCols, pDataA);
+  arm_mat_init_f32(matrixB, nRows, nCols, pDataB);
+
+//  if (matrixA->numRows != nRows) {
+//	  matrixA->numRows = nRows;
+//  }
+//  if (matrixA->numCols != nCols) {
+//	  matrixA->numCols = nCols;
+//  }
+//  if (matrixA->pData != pDataA) {
+//	  matrixA->pData = pDataA;
+//  }
+//
+//  if (matrixB->numRows != nRows) {
+//	  matrixB->numRows = nRows;
+//  }
+//  if (matrixB->numCols != nCols) {
+//	  matrixB->numCols = nCols;
+//  }
+//  if (matrixB->pData != pDataB) {
+//	  matrixB->pData = pDataB;
+//  }
+
 
   /* USER CODE END 2 */
 
@@ -253,7 +289,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(USB_FS_PWR_EN_GPIO_Port, USB_FS_PWR_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LD1_Pin|Red_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
@@ -271,8 +307,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(USB_FS_PWR_EN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD1_Pin LD3_Pin */
-  GPIO_InitStruct.Pin = LD1_Pin|LD3_Pin;
+  /*Configure GPIO pins : LD1_Pin Red_LED_Pin */
+  GPIO_InitStruct.Pin = LD1_Pin|Red_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

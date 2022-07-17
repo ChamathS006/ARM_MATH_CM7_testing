@@ -430,3 +430,27 @@ java.lang.Exception: The project description file (.project) for 'CMSIS_4.5_matr
 
 !ENTRY org.eclipse.cdt.core 1 0 2022-07-17 13:00:53.262
 !MESSAGE Indexed 'CMSIS_4.5_test_v2' (26 sources, 87 headers) in 4.01 sec: 8,319 declarations; 62,481 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0028%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2022-07-17 13:21:32.332
+!MESSAGE Indexed 'CMSIS_4.5_test_v2' (26 sources, 87 headers) in 2.78 sec: 8,319 declarations; 62,481 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0028%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2022-07-17 13:21:39.657
+!MESSAGE Indexed 'CMSIS_4.5_test_v2' (26 sources, 87 headers) in 2.99 sec: 8,319 declarations; 62,481 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0028%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2022-07-17 13:21:44.897
+!MESSAGE Indexed 'CMSIS_4.5_test_v2' (26 sources, 87 headers) in 2.71 sec: 8,319 declarations; 62,481 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0028%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2022-07-17 13:21:51.882
+!MESSAGE Indexed 'CMSIS_4.5_test_v2' (26 sources, 87 headers) in 2.71 sec: 8,319 declarations; 62,481 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0028%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2022-07-17 13:24:45.329
+!MESSAGE Indexed 'dud' (26 sources, 113 headers) in 3.94 sec: 14,617 declarations; 74,791 references; 3 unresolved inclusions; 46 syntax errors; 171 unresolved names (0.19%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2022-07-17 13:27:27.623
+!MESSAGE Indexed 'CMSIS_4.5_test_v2' (26 sources, 91 headers) in 4.51 sec: 10,578 declarations; 65,293 references; 0 unresolved inclusions; 2 syntax errors; 2 unresolved names (0.0026%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2022-07-17 13:28:17.732
+!MESSAGE Indexed 'CMSIS_4.5_test_v2' (26 sources, 92 headers) in 2.79 sec: 10,578 declarations; 65,293 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0026%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2022-07-17 13:35:45.777
+!MESSAGE Indexed 'CMSIS_4.5_test_v2' (26 sources, 92 headers) in 3.22 sec: 10,585 declarations; 65,313 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0026%)
