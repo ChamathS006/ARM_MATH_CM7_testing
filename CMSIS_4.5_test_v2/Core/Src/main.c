@@ -55,37 +55,67 @@ static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_HS_USB_Init(void);
 /* USER CODE BEGIN PFP */
-int mat_f32_check_equal(arm_matrix_instance_f32* matrixAPtr, arm_matrix_instance_f32* matrixBPtr);
+arm_status mat_f32_check_equal(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixB);
+arm_status mat_mult_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixB, arm_matrix_instance_f32 matrixTrue);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-int mat_f32_check_equal(arm_matrix_instance_f32* matrixAPtr, arm_matrix_instance_f32* matrixBPtr) {
+arm_status mat_f32_check_equal(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixB) {
 	/*
-	 * Returns 0 if matrices aren't equal
-	 * Returns 1 if matrices are equal
+	 * Returns ARM_MATH_SIZE_MISMATCH if sizes aren't equal
+	 * Returns ARM_MATH_SUCCESS if matrices are equal
+	 * Returns ARM_MATH_TEST_FAILURE if matrices aren't equal
 	 *
 	 * */
 
 	// Check if the rows and cols match up in number
-	int test_nRows = (matrixAPtr->numRows == matrixBPtr->numRows);
-	int test_nCols = (matrixAPtr->numCols == matrixBPtr->numCols);
+	int test_nRows = (matrixA.numRows == matrixB.numRows);
+	int test_nCols = (matrixA.numCols == matrixB.numCols);
 
-	// If there's a mismatch, then return 0 immediately
+	// If there's a mismatch, then return ARM_MATH_SIZE_MISMATCH immediately
 	if (test_nRows * test_nCols == 0) {
-		return 0;
+		return ARM_MATH_SIZE_MISMATCH;
 	}
 
 	// Since rows and cols match, we need to check every entry
-	for (int i = 0; i < (matrixAPtr->numRows) * (matrixAPtr->numCols); i++) {
-		if (matrixAPtr->pData[i] != matrixBPtr->pData[i]) {
-			return 0;
+	for (int i = 0; i < (matrixA.numRows) * (matrixA.numCols); i++) {
+		if (matrixA.pData[i] != matrixB.pData[i]) {
+			return ARM_MATH_TEST_FAILURE;
 		}
 	}
 
-	// If it's fine, then return 1
-	return 1;
+	// If it's fine, then return ARM_MATH_SUCCESS
+	return ARM_MATH_SUCCESS;
+}
+
+arm_status mat_mult_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixB, arm_matrix_instance_f32 matrixTrue) {
+	/*
+	 * Checks if matrixA * matrixB equals matrixTrue
+	 * Returns ARM_MATH_SUCCESS if the test is passed
+	 * Returns ARM_MATH_TEST_FAILURE if the test fails
+	 * Returns ARM_MATH_SIZE_MISMATCH if the sizes of each matrix are incompatible
+	 * */
+	// Initialise variables
+	arm_matrix_instance_f32 matrixC; //C. Meant to be C = AB
+
+	// Initialise matrixC to store the result of matrixA * matrixB
+	uint16_t matrixC_size = matrixA.numRows * matrixB.numCols;
+	float32_t pDataC[matrixC_size];
+	arm_mat_init_f32(&matrixC, matrixA.numRows, matrixB.numCols, pDataC);
+
+	// Multiply A and B and store in C. Status stores error info if necessary
+	arm_status status = arm_mat_mult_f32(&matrixA, &matrixB, &matrixC);
+
+	// If multiplication failed, then return it
+	// If not, then check if the result is equal to the true result and return status
+
+	if (status == ARM_MATH_SUCCESS) {
+		status = mat_f32_check_equal(matrixC, matrixTrue);
+	}
+	free(pDataC);
+	return status;
 }
 /* USER CODE END 0 */
 
@@ -124,47 +154,33 @@ int main(void)
   // Initialise some variables
   arm_matrix_instance_f32 matrixA; //A
   arm_matrix_instance_f32 matrixB; //B
-  arm_matrix_instance_f32 matrixC; //C. Meant to be C = AB
-  arm_matrix_instance_f32 matrixTrue; // True result to compare against
+//  arm_matrix_instance_f32 matrixC; //C. Meant to be C = AB
+  arm_matrix_instance_f32 matrixTrue_mat_mult_f32; // True result to compare against
 
   uint16_t nRowsA = 3;
-  uint16_t nColsA = 2;
-  float32_t pDataA[] = {1,2,3,4,5,6};
+  uint16_t nColsA = 3;
+  float32_t pDataA[] = {1,2,3,4,5,6,7,8,9};
 
   uint16_t nRowsB = 2;
   uint16_t nColsB = 3;
   float32_t pDataB[] = {8,1,3,5,2,4};
 
-  uint16_t nRowsTrue = nRowsA;
-  uint16_t nColsTrue = nColsB;
-  float32_t pDataTrue[] = {18,5,11,44,11,25,70,17,39};
+  uint16_t nRowsTrue_mat_mult_f32 = nRowsA;
+  uint16_t nColsTrue_mat_mult_f32 = nColsB;
+  float32_t pDataTrue_mat_mult_f32[] = {18,5,11,44,11,25,70,17,39};
 
   arm_mat_init_f32(&matrixA, nRowsA, nColsA, pDataA);
   arm_mat_init_f32(&matrixB, nRowsB, nColsB, pDataB);
-  arm_mat_init_f32(&matrixTrue, nRowsTrue, nColsTrue, pDataTrue);
+  arm_mat_init_f32(&matrixTrue_mat_mult_f32, nRowsTrue_mat_mult_f32, nColsTrue_mat_mult_f32, pDataTrue_mat_mult_f32);
 
-  // Initialise matrixC to store the result of matrixA * matrixB
-  uint16_t matrixC_size = matrixA.numRows * matrixB.numCols;
-  float32_t pDataC[matrixC_size];
+  // Call the test itself
+  arm_status test_result = mat_mult_f32_test(matrixA, matrixB, matrixTrue_mat_mult_f32);
 
-  arm_mat_init_f32(&matrixC, matrixA.numRows, matrixB.numCols, pDataC);
-
-  // Multiply A and B and store in C
-  arm_status ableToMultiply = arm_mat_mult_f32(&matrixA, &matrixB, &matrixC);
-
-  // If multiplication failed, then test_mult_flag should be set to 0
-  int test_mult_flag;
-
-  if (ableToMultiply == ARM_MATH_SUCCESS) {
-	  test_mult_flag = mat_f32_check_equal(&matrixC, &matrixTrue);
-  }
-  else {
-	  test_mult_flag = 0;
-	  // Jump to error handler as well
+  // Depending on the test result, blink LED's appropriately
+  if (test_result == ARM_MATH_SIZE_MISMATCH) {
 	  Error_Handler();
   }
 
-  free(pDataC);
 
   /* USER CODE END 2 */
 
@@ -172,10 +188,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (test_mult_flag == 1) {
+	  if (test_result == ARM_MATH_SUCCESS) {
 		  HAL_GPIO_TogglePin(Green_LED_GPIO_Port, Green_LED_Pin);
 	  }
-	  else {
+	  else if (test_result == ARM_MATH_TEST_FAILURE) {
 		  HAL_GPIO_TogglePin(Red_LED_GPIO_Port, Red_LED_Pin);
 	  }
 	  HAL_Delay(1000);
