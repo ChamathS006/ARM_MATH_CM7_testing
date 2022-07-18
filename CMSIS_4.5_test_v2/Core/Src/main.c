@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "string.h"
 #include "arm_math.h"
 /* USER CODE END Includes */
@@ -34,6 +35,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define WINDOW_SIZE 9 	// Window size of array to calculate covariance
+#define NUM_OF_VARIABLES 3 	// Number of variables from sensors for calculating covariance
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -56,7 +59,18 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_HS_USB_Init(void);
 /* USER CODE BEGIN PFP */
 arm_status mat_f32_check_equal(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixB);
+
 arm_status mat_mult_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixB, arm_matrix_instance_f32 matrixTrue);
+
+arm_status mat_trans_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixTrue);
+
+void vec_f32_demean(float32_t dataVector[WINDOW_SIZE], float32_t demeanedVector[WINDOW_SIZE]);
+
+arm_status create_data_matrix(arm_matrix_instance_f32* uninitialised_matrix, int numOfArrays, ...);
+
+arm_status create_data_matrix_f32_test_3_arrays(float32_t array1[9], float32_t array2[9], float32_t array3[9], float32_t arrayTrue[27]);
+
+//arm_status create_covariance_f32();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -117,6 +131,243 @@ arm_status mat_mult_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instanc
 	free(pDataC);
 	return status;
 }
+
+arm_status mat_trans_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixTrue) {
+	// Initialise variables
+	arm_matrix_instance_f32 matrixAT;
+	uint16_t sizeMatrixAT = matrixA.numRows * matrixA.numCols;
+	float32_t pDataAT[sizeMatrixAT];
+	arm_mat_init_f32(&matrixAT, matrixA.numCols, matrixA.numRows, pDataAT);
+
+	// Transpose A and store in AT
+	arm_status status = arm_mat_trans_f32(&matrixA, &matrixAT);
+
+	if (status == ARM_MATH_SIZE_MISMATCH) {
+		Error_Handler();
+	}
+
+	// Check if the result matches the true answer
+	status = mat_f32_check_equal(matrixAT, matrixTrue);
+
+	return status;
+}
+
+void vec_f32_demean(float32_t dataVector[WINDOW_SIZE], float32_t demeanedVector[WINDOW_SIZE]) {
+/*
+ *
+ * */
+	// Initialise variables
+	float32_t meanValue = 0; // Stores mean of the dataVector input
+
+	// first, get the mean of this 1 x WINDOW_SIZE vector and store in meanValue
+	arm_mean_f32(dataVector, (uint32_t) WINDOW_SIZE, &meanValue);
+
+	// Now offset the input vector by the mean value
+	arm_offset_f32(dataVector, meanValue, demeanedVector, (uint32_t) WINDOW_SIZE);
+
+}
+
+arm_status create_data_matrix_f32(arm_matrix_instance_f32* uninitialised_matrix, int numOfArrays, ...) {
+	/* This function takes in an uninitialised matrix ptr, a number of arrays, and those float32_t arrays themselves
+	 * It checks that there is an appropriate number of inputs and that all inputs are of the appropriate size
+	 * If this is true, then the matrix is initialised formally with each array being a row of the matrix.
+	 *
+	 *
+	 * uninitialised_matrix: Uninitialised matrix instance. This will be altered to turn into the relevant matrix
+	 * numOfArrays: A counter to check how many arrays were passed in
+	 * ...: Variable number of arrays passed in. Arrays of float32_t type to match the va_arg calls in this function
+	 * 	NOTE: Each array should have a length of WINDOW_SIZE, but as of 18/07/2022
+	 *
+	 * Returns ARM_MATH_SUCCESS if a matrix was initialised correctly
+	 * If numOfArrays doesn't match NUM_OF_VARIABLES, returns with ARM_MATH_SIZE_MISMATCH
+	 * Also sets uninitialised_matrix to have the relevant size (nRows = numOfArrays ; nCols = WINDOW_SIZE)
+	 * 	Each row corresponds to a different variable. They represent the 0th to (WINDOW_SIZE - 1)th sample
+	 * 		(eg: XAccel data from 1st sample to 100th sample, corresponding )
+	 * 	Each column represents the nth data entry of all variables
+	 * 		(eg: n = 4 matches column 3: Column 3 has the 4th data entry for XAccel, YAccel, ZAccel, Altitude, Pressure, Temp)
+	 *
+	 * Eg: create_data_matrix_f32(dummy_matrix, 3, XAccelVector[WINDOW_SIZE], YAccelVector[WINDOW_SIZE], ZAccelVector[WINDOW_SIZE]);
+	 * */
+	// if numOfArrays != NUM_OF_VARIABLES, then return size mismatch immediately
+	if (numOfArrays != NUM_OF_VARIABLES) {
+		return ARM_MATH_SIZE_MISMATCH;
+	}
+	// Declare variable argument variables and other variables
+	va_list valist;
+	int outputVector_size = WINDOW_SIZE * numOfArrays;
+	float32_t outputVector[outputVector_size];
+
+	// Start accessing the arguments
+	va_start(valist, numOfArrays);
+
+	// Since all arguments from here should be float32_t arrays, declare a dummy array to store it
+	float32_t* argument = NULL;
+
+	for (int i = 0; i < numOfArrays; i++) {
+		// Get next argument
+		argument = va_arg(valist, float32_t*);
+
+		// If the length of this argument doesn't match WINDOW_SIZE, then return size mismatch
+//		if ((sizeof(argument))/(sizeof(float32_t)) != WINDOW_SIZE) {
+//			return ARM_MATH_SIZE_MISMATCH;
+//		}
+
+		// Add it to the output array
+		for (int j = 0; j < WINDOW_SIZE; j++) {
+			outputVector[i * WINDOW_SIZE + j] = argument[j];
+		}
+	}
+	// Stop accessing arguments
+	va_end(valist);
+
+	// Output vector now has everything we need
+	arm_mat_init_f32(uninitialised_matrix, numOfArrays, (uint16_t) WINDOW_SIZE, outputVector);
+
+	// Seems like the function works; return ARM_MATH_SUCCESS
+	return ARM_MATH_SUCCESS;
+}
+
+arm_status create_covariance_matrix_f32(arm_matrix_instance_f32* dataMatrix, int N, arm_matrix_instance_f32* covarianceMatrix) {
+	/*
+	* Inputs:
+	* dataMatrix: A matrix with all the data entries in them, and demeaned already
+	* 	The format should be:
+	* 		Rows representing different variables
+	* 		Columns representing different samples
+	* 	Note that the create_data_matrix_f32 function turns the uninitialised matrix input into a
+	* 	matrix with the compatible format for this function
+	*
+	* N: the number of samples - 1 for Bessel's correction (should be WINDOW_SIZE - 1 anyway)
+	* covarianceMatrix: An uninitialised matrix with known dimensions
+	* 	(NUM_OF_VARIABLES x NUM_OF_VARIABLES)
+	*
+	* Outputs:
+	* status to show if the function completed the steps.
+	* 	Furthermore, the covarianceMatrix input will now be initialised with the correct data
+	* */
+
+	// Initialise status variable
+	arm_status status;
+
+	// Initialise a new matrix to store the transpose of dataMatrix
+	arm_matrix_instance_f32 dataMatrixT;
+	uint16_t dataMatrixT_size = (dataMatrix->numRows) * (dataMatrix->numCols);
+	float32_t pData_dataMatrixT[dataMatrixT_size];
+	arm_mat_init_f32(&dataMatrixT, dataMatrix->numCols, dataMatrix->numRows, pData_dataMatrixT);
+
+	// Initialise a new matrix to store the result of dataMatrix * dataMatrixT
+	arm_matrix_instance_f32 tempMatrix;
+	uint16_t tempMatrix_size = (dataMatrix->numRows) * (dataMatrix->numRows); // Due to the order of multiplication
+	float32_t pData_tempMatrix[tempMatrix_size];
+	arm_mat_init_f32(&tempMatrix, (dataMatrix->numRows), (dataMatrix->numRows), pData_tempMatrix);
+
+	// Transpose dataMatrix and store in dataMatrixT
+	status = arm_mat_trans_f32(dataMatrix, &dataMatrixT);
+
+	if (status != ARM_MATH_SUCCESS) {
+		return status;
+	}
+
+	// Now do dataMatrix * dataMatrixT and store into tempMatrix
+	status = arm_mat_mult_f32(dataMatrix, &dataMatrixT, &tempMatrix);
+
+	if (status != ARM_MATH_SUCCESS) {
+		return status;
+	}
+
+	// Finally, scale each result by 1/(N-1) = 1/((uint16_t) WINDOW_SIZE - 1)
+	float32_t scaleFactor = ((float32_t) 1)/(N-1);
+	arm_mat_scale_f32(&tempMAtrix, scaleFactor, covarianceMatrix);
+	if (status != ARM_MATH_SUCCESS) {
+		return status;
+	}
+
+	return status;
+}
+
+arm_status create_data_matrix_f32_test_3_arrays(float32_t array1[9], float32_t array2[9], float32_t array3[9], float32_t arrayTrue[27]) {
+	// Initialise variables
+	arm_matrix_instance_f32 test_matrix;
+	arm_matrix_instance_f32 true_matrix;
+	uint16_t arrayRows = 1;
+	uint16_t arrayCols = 3;
+
+	uint16_t arrayTrueRows = 3;
+	uint16_t arrayTrueCols = 9;
+
+	arm_status status;
+
+	// Set up the true matrix
+	arm_mat_init_f32(&true_matrix, arrayTrueRows, arrayTrueCols, arrayTrue);
+
+	// Call the function
+	status = create_data_matrix_f32(&test_matrix, 3, array1, array2, array3);
+
+	// Check if the test matrix is the same as the true matrix
+	status = mat_f32_check_equal(test_matrix, true_matrix);
+
+	return status;
+
+}
+
+arm_status create_covariance_matrix_f32_test_3_arrays(float32_t array1[9], float32_t array2[9], float32_t array3[9], float32_t arrayTrue[9]) {
+	/*
+	 * Test structure:
+	 * 	Demean array1, array2, and array3 respectively using the vec_f32_demean function
+	 * 	Use the resulting vectors to create a data matrix using the create_data_matrix_f32 function
+	 * 	From there, pass the resulting data_matrix into the create_covariance_matrix_f32 function
+	 *
+	 * 	Check if the final result matches the expected result generated on MATLAB (format long just in case)
+	 *	Return status if the status is not ARM_MATH_SUCCESS at some point
+	 *	Return ARM_MATH_SUCCESS if the test is passed
+	 *	Return ARM_MATH_TEST_FAILURE if the test fails
+	 *
+	 * */
+
+	// Initialise general variables
+	uint16_t numOfRows = 3;
+	uint16_t numOfCols = 9;
+	arm_status status;
+
+	// Initialise variables for demeaning step
+	float32_t demeanedArray1[WINDOW_SIZE];
+	float32_t demeanedArray2[WINDOW_SIZE];
+	float32_t demeanedArray3[WINDOW_SIZE];
+
+	// Initialise variables for data_matrix creation step
+	arm_matrix_instance_f32 dataMatrix;
+
+	// Initialise variables for covariance creation step
+	arm_matrix_instance_f32 covarianceMatrix;
+
+	// Demean the data and store in appropriate vectors
+	vec_f32_demean(array1, demeanedArray1);
+	vec_f32_demean(array2, demeanedArray2);
+	vec_f32_demean(array3, demeanedArray3);
+
+	// Use demeanedArrays to make a data_matrix
+	status = create_data_matrix_f32(&dataMatrix, numOfRows, demeanedArray1, demeanedArray2, demeanedArray3);
+
+	if (status != ARM_MATH_SUCCESS) {
+		return status;
+	}
+
+	// Use dataMatrix to make covariance matrix
+	status = create_covariance_matrix_f32(&dataMatrix, numOfCols, &covarianceMatrix);
+
+	if (status != ARM_MATH_SUCCESS) {
+		return status;
+	}
+
+	// Create the true covariance matrix (size of arrayTrue should be numOfRows^2)
+	arm_matrix_instance_f32 covarianceMatrixTrue;
+	arm_mat_init_f32(&covarianceMatrixTrue, numOfRows, numOfRows, arrayTrue);
+
+	// Check that this covarianceMatrix matches the true matrix
+	status = mat_f32_check_equal(covarianceMatrix, covarianceMatrixTrue);
+
+	return status;
+}
 /* USER CODE END 0 */
 
 /**
@@ -154,27 +405,37 @@ int main(void)
   // Initialise some variables
   arm_matrix_instance_f32 matrixA; //A
   arm_matrix_instance_f32 matrixB; //B
-//  arm_matrix_instance_f32 matrixC; //C. Meant to be C = AB
+
   arm_matrix_instance_f32 matrixTrue_mat_mult_f32; // True result to compare against
+  arm_matrix_instance_f32 matrixTrue_mat_trans_f32;
 
   uint16_t nRowsA = 3;
   uint16_t nColsA = 3;
   float32_t pDataA[] = {1,2,3,4,5,6,7,8,9};
 
-  uint16_t nRowsB = 2;
+  uint16_t nRowsB = 3;
   uint16_t nColsB = 3;
-  float32_t pDataB[] = {8,1,3,5,2,4};
+  float32_t pDataB[] = {8,1,3,5,2,4,8,1,5};
 
+  float32_t pDataC[] = {9,8,7,6,5,4,3,2,1};
+  float32_t pDataTrue_create_data_matrix_f32_test_3_arrays[] = {1,2,3,4,5,6,7,8,9,8,1,3,5,2,4,8,1,5,9,8,7,6,5,4,3,2,1};
   uint16_t nRowsTrue_mat_mult_f32 = nRowsA;
   uint16_t nColsTrue_mat_mult_f32 = nColsB;
   float32_t pDataTrue_mat_mult_f32[] = {18,5,11,44,11,25,70,17,39};
 
+  uint16_t nRowsTrue_mat_trans_f32 = 2;
+  uint16_t nColsTrue_mat_trans_f32 = 2;
+  float32_t pDataTrue_mat_trans_f32[] = {8,5,1,2,3,4};
+
   arm_mat_init_f32(&matrixA, nRowsA, nColsA, pDataA);
   arm_mat_init_f32(&matrixB, nRowsB, nColsB, pDataB);
   arm_mat_init_f32(&matrixTrue_mat_mult_f32, nRowsTrue_mat_mult_f32, nColsTrue_mat_mult_f32, pDataTrue_mat_mult_f32);
+  arm_mat_init_f32(&matrixTrue_mat_trans_f32, nRowsTrue_mat_trans_f32, nColsTrue_mat_trans_f32, pDataTrue_mat_trans_f32);
 
-  // Call the test itself
-  arm_status test_result = mat_mult_f32_test(matrixA, matrixB, matrixTrue_mat_mult_f32);
+  // Call the relevant test
+//  arm_status test_result = mat_mult_f32_test(matrixA, matrixB, matrixTrue_mat_mult_f32);
+//  arm_status test_result = mat_trans_f32_test(matrixB, matrixTrue_mat_trans_f32);
+  arm_status test_result = create_data_matrix_f32_test_3_arrays(pDataA, pDataB, pDataC, pDataTrue_create_data_matrix_f32_test_3_arrays);
 
   // Depending on the test result, blink LED's appropriately
   if (test_result == ARM_MATH_SIZE_MISMATCH) {
