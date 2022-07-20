@@ -61,17 +61,17 @@ static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_HS_USB_Init(void);
 /* USER CODE BEGIN PFP */
-arm_status mat_f32_check_equal(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixB);
-
-arm_status mat_mult_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixB, arm_matrix_instance_f32 matrixTrue);
-
-arm_status mat_trans_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixTrue);
-
-void vec_f32_demean(float32_t dataVector[WINDOW_SIZE], float32_t demeanedVector[WINDOW_SIZE]);
-
-arm_status create_data_matrix(arm_matrix_instance_f32* uninitialised_matrix, int numOfArrays, ...);
-
-arm_status create_data_matrix_f32_test_3_arrays(float32_t array1[9], float32_t array2[9], float32_t array3[9], float32_t arrayTrue[27]);
+//arm_status mat_f32_check_equal(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixB);
+//
+//arm_status mat_mult_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixB, arm_matrix_instance_f32 matrixTrue);
+//
+//arm_status mat_trans_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instance_f32 matrixTrue);
+//
+//void vec_f32_demean(float32_t dataVector[WINDOW_SIZE], float32_t demeanedVector[WINDOW_SIZE]);
+//
+//arm_status create_data_matrix(arm_matrix_instance_f32* uninitialised_matrix, int numOfArrays, ...);
+//
+//arm_status create_data_matrix_f32_test_3_arrays(float32_t array1[9], float32_t array2[9], float32_t array3[9], float32_t arrayTrue[27]);
 
 /* USER CODE END PFP */
 
@@ -154,7 +154,7 @@ arm_status mat_trans_f32_test(arm_matrix_instance_f32 matrixA, arm_matrix_instan
 	return status;
 }
 
-void vec_f32_demean(float32_t dataVector[WINDOW_SIZE], float32_t demeanedVector[WINDOW_SIZE]) {
+void vec_f32_demean(float32_t dataVector[WINDOW_SIZE]/*, float32_t demeanedVector[WINDOW_SIZE]*/) {
 /*
  *
  * */
@@ -165,7 +165,7 @@ void vec_f32_demean(float32_t dataVector[WINDOW_SIZE], float32_t demeanedVector[
 	arm_mean_f32(dataVector, (uint32_t) WINDOW_SIZE, &meanValue);
 
 	// Now offset the input vector by the mean value
-	arm_offset_f32(dataVector, -meanValue, demeanedVector, (uint32_t) WINDOW_SIZE);
+	arm_offset_f32(dataVector, -meanValue, dataVector, (uint32_t) WINDOW_SIZE);
 
 }
 
@@ -230,7 +230,7 @@ arm_status create_data_matrix_f32(arm_matrix_instance_f32* uninitialised_matrix,
 	return ARM_MATH_SUCCESS;
 }
 
-arm_status create_covariance_matrix_f32(arm_matrix_instance_f32 dataMatrix, int N, arm_matrix_instance_f32* covarianceMatrix) {
+arm_status create_covariance_matrix_f32(arm_matrix_instance_f32* dataMatrix, int N, arm_matrix_instance_f32* covarianceMatrix) {
 	/*
 	* Inputs:
 	* dataMatrix: A matrix with all the data entries in them, and demeaned already
@@ -253,31 +253,34 @@ arm_status create_covariance_matrix_f32(arm_matrix_instance_f32 dataMatrix, int 
 	arm_status status;
 
 	// Initialise a new matrix to store the transpose of dataMatrix
-	arm_matrix_instance_f32 dataMatrixT;
+	arm_matrix_instance_f32* dataMatrixT = dataMatrix - ((TOTAL_SIZE+1) * sizeof(arm_matrix_instance_f32));
 //	uint16_t dataMatrixT_size = (dataMatrix.numRows) * (dataMatrix.numCols);
-	float32_t pData_dataMatrixT[TOTAL_SIZE];
-	arm_mat_init_f32(&dataMatrixT, dataMatrix.numCols, dataMatrix.numRows, pData_dataMatrixT);
+//	float32_t pData_dataMatrixT[TOTAL_SIZE];
+	float32_t* pData_dataMatrixT = dataMatrix->pData - ((TOTAL_SIZE+1) * sizeof(float32_t));
+	arm_mat_init_f32(dataMatrixT, dataMatrix->numCols, dataMatrix->numRows, pData_dataMatrixT);
 
 	// Initialise a new matrix to store the result of dataMatrix * dataMatrixT
-	arm_matrix_instance_f32 tempMatrix;
+	arm_matrix_instance_f32* tempMatrix = (dataMatrixT) - ((TOTAL_SIZE+1) * sizeof(arm_matrix_instance_f32));
 //	uint16_t tempMatrix_size = (dataMatrix.numRows) * (dataMatrix.numRows); // Due to the order of multiplication
-	float32_t pData_tempMatrix[SQUARE_SIZE];
-	arm_mat_init_f32(&tempMatrix, (dataMatrix.numRows), (dataMatrix.numRows), pData_tempMatrix);
+//	float32_t pData_tempMatrix[SQUARE_SIZE];
+	float32_t* pData_tempMatrix = (dataMatrixT->pData) - ((TOTAL_SIZE+1) * sizeof(float32_t));
+	arm_mat_init_f32(tempMatrix, (dataMatrix->numRows), (dataMatrix->numRows), pData_tempMatrix);
 
 	// Properly initialise the covariance matrix
 //	uint16_t covarianceMatrix_size = (dataMatrix.numRows) * (dataMatrix.numRows);
-	float32_t pData_covarianceMatrix[SQUARE_SIZE];
-	arm_mat_init_f32(covarianceMatrix, dataMatrix.numRows, dataMatrix.numRows, pData_covarianceMatrix);
+//	float32_t pData_covarianceMatrix[SQUARE_SIZE];
+	float32_t* pData_covarianceMatrix = (tempMatrix->pData) - ((TOTAL_SIZE+1) * sizeof(float32_t));
+	arm_mat_init_f32(covarianceMatrix, dataMatrix->numRows, dataMatrix->numRows, pData_covarianceMatrix);
 
 	// Transpose dataMatrix and store in dataMatrixT
-	status = arm_mat_trans_f32(&dataMatrix, &dataMatrixT);
+	status = arm_mat_trans_f32(dataMatrix, &dataMatrixT);
 
 	if (status != ARM_MATH_SUCCESS) {
 		return status;
 	}
 
 	// Now do dataMatrix * dataMatrixT and store into tempMatrix
-	status = arm_mat_mult_f32(&dataMatrix, &dataMatrixT, &tempMatrix);
+	status = arm_mat_mult_f32(dataMatrix, &dataMatrixT, &tempMatrix);
 
 	if (status != ARM_MATH_SUCCESS) {
 		return status;
@@ -338,9 +341,13 @@ arm_status create_covariance_matrix_f32_test_3_arrays(float32_t array1[WINDOW_SI
 	arm_status status;
 
 	// Initialise variables for demeaning step
-	float32_t demeanedArray1[WINDOW_SIZE];
-	float32_t demeanedArray2[WINDOW_SIZE];
-	float32_t demeanedArray3[WINDOW_SIZE];
+//	float32_t demeanedArray1[WINDOW_SIZE];
+//	float32_t demeanedArray2[WINDOW_SIZE];
+//	float32_t demeanedArray3[WINDOW_SIZE];
+
+	// Create the true covariance matrix (size of arrayTrue should be numOfRows^2)
+	arm_matrix_instance_f32 covarianceMatrixTrue;
+	arm_mat_init_f32(&covarianceMatrixTrue, numOfRows, numOfRows, arrayTrue);
 
 	// Initialise variables for data_matrix creation step
 	arm_matrix_instance_f32 dataMatrix;
@@ -351,12 +358,18 @@ arm_status create_covariance_matrix_f32_test_3_arrays(float32_t array1[WINDOW_SI
 	arm_matrix_instance_f32 covarianceMatrix;
 
 	// Demean the data and store in appropriate vectors
-	vec_f32_demean(array1, demeanedArray1);
-	vec_f32_demean(array2, demeanedArray2);
-	vec_f32_demean(array3, demeanedArray3);
+//	vec_f32_demean(array1, demeanedArray1);
+//	vec_f32_demean(array2, demeanedArray2);
+//	vec_f32_demean(array3, demeanedArray3);
+
+	vec_f32_demean(array1);
+	vec_f32_demean(array2);
+	vec_f32_demean(array3);
 
 	// Use demeanedArrays to make a data_matrix
-	status = create_data_matrix_f32(&dataMatrix, numOfRows, demeanedArray1, demeanedArray2, demeanedArray3);
+//	status = create_data_matrix_f32(&dataMatrix, numOfRows, demeanedArray1, demeanedArray2, demeanedArray3);
+
+	status = create_data_matrix_f32(&dataMatrix, numOfRows, array1, array2, array3);
 
 	size_arm_mat_instance_f32 = sizeof(dataMatrix);
 
@@ -364,16 +377,16 @@ arm_status create_covariance_matrix_f32_test_3_arrays(float32_t array1[WINDOW_SI
 		return status;
 	}
 
+
+
 	// Use dataMatrix to make covariance matrix
-	status = create_covariance_matrix_f32(dataMatrix, numOfCols, &covarianceMatrix);
+	status = create_covariance_matrix_f32(&dataMatrix, numOfCols, &covarianceMatrix);
 
 	if (status != ARM_MATH_SUCCESS) {
 		return status;
 	}
 
-	// Create the true covariance matrix (size of arrayTrue should be numOfRows^2)
-	arm_matrix_instance_f32 covarianceMatrixTrue;
-	arm_mat_init_f32(&covarianceMatrixTrue, numOfRows, numOfRows, arrayTrue);
+
 
 	// Check that this covarianceMatrix matches the true matrix
 	status = mat_f32_check_equal(covarianceMatrix, covarianceMatrixTrue);
